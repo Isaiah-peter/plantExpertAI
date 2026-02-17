@@ -1,17 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { usePlantStore } from '../../store/usePlantStore'; // Path to your store
 
 const ResultScreen: React.FC = () => {
   const router = useRouter();
+  const scanData = usePlantStore((state) => state.scanData);
+
+
   
   // Grab the data passed from the ScanScreen
-  const { name, desc, steps, imageUri } = useLocalSearchParams<{
-    name: string;
-    desc: string;
-    steps: string;
-    imageUri: string;
-  }>();
+  const { name, desc, steps, imageUri } = {
+    name: scanData?.disease_name || "Unknown Disease",
+    desc: scanData?.description || "No description available.",
+    steps: scanData?.["Possible Steps"] || "No steps available.",
+    imageUri: scanData?.image_url || null
+  };
+
 
   return (
     <View style={styles.container}>

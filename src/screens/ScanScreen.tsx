@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker'; // Import Expo Image Picker
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import ScannerOverlay from '../components/ScannerOverlay';
 import { identifyPlantDisease } from '../services/api'; // Import your API function
+import { usePlantStore } from '../../store/usePlantStore'; // Import Zustand store
 
 const ScanScreen = () => {
   const router = useRouter();
-  const [isProcessing, setIsProcessing] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,28 +26,36 @@ const ScanScreen = () => {
 
     // 2. Launch Camera or Library
     const result = useCamera 
-      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 })
+      ? await ImagePicker.launchCameraAsync({ 
+      allowsEditing: true, 
+      quality: 0.4, // Lower quality significantly reduces RAM spikes
+      aspect: [4, 3],})
       : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.7 });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      uploadImage(result.assets[0].uri); // Upload the image to the AI server        
+      setImage(result.assets[0].uri);        
     }
   };
+
+  useEffect(() => {
+  if (image) {
+    uploadImage(image);
+  }
+}, [image]);
+
+  const setScanData = usePlantStore((state) => state.setScanData);
 
   // In ScanScreen.tsx
 const uploadImage = async (uri: string) => {
   setIsLoading(true); // Start spinner
   try {
     const result = await identifyPlantDisease(uri);
+
+    setScanData(result); // Store the result in state
     // Pass the result to the Result screen via Expo Router
+    console.log("Scan Result:", result); // Debug log to check the result before navigation
     router.push({
       pathname: '/result',
-      params: { 
-        disease_name: result.disease_name,
-        description: result.description,
-        steps: result["Possible Steps"]
-      }
     });
   } catch (err) {
     Alert.alert("Error", "AI Server is not responding.");
