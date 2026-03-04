@@ -9,7 +9,7 @@ export interface PlantDiseaseResponse {
 
 // Replace with your local IP address for physical devices
 // or 10.0.2.2 for Android Emulator
-const BASE_URL = 'https://935d-102-89-69-218.ngrok-free.app'; 
+const BASE_URL = 'https://d191-102-89-84-70.ngrok-free.app'; 
 
 export const identifyPlantDisease = async (
   uri: string, 
